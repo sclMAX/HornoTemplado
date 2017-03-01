@@ -1,8 +1,8 @@
 #include <LiquidCrystal.h>
+#include "config.h"
 #include "PT100.h"
-#define PIN_QUEMADOR 3
 
-PT100 st(A5);
+PT100 st(PIN_SENSOR);
 LiquidCrystal lcd(7, 8, 9, 10, 11, 12); //    ( RS, EN, d4, d5, d6, d7)
 byte grado[8] =
     {
@@ -41,6 +41,13 @@ void setup()
   lcd.createChar(1, grado);
   lcd.createChar(2, up);
   pinMode(PIN_QUEMADOR, OUTPUT);
+  pinMode(PIN_RESET, OUTPUT);
+  pinMode(PIN_DOWN, INPUT);
+  pinMode(PIN_MOVE, INPUT);
+  pinMode(PIN_ON, INPUT);
+  pinMode(PIN_QERROR, INPUT);
+  pinMode(PIN_SET, INPUT);
+  pinMode(PIN_UP,INPUT);
 }
 
 void loop()
