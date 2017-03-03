@@ -1,16 +1,17 @@
 #include <LiquidCrystal.h>
 #include "Switch.h"
 #include "config.h"
+#include "lcdChars.h"
 #include "PT100.h"
 
 PT100 st(PIN_SENSOR);                      //Inicializar sensor PT100
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7); //Inicializar Display
 Switch btnUp(PIN_UP, INPUT);
-Switch btnDown(PIN_DOWN);
-Switch btnMove(PIN_MOVE);
-Switch btnSet(PIN_SET);
-Switch btnOn(PIN_ON);
-Switch btnError(PIN_QERROR);
+Switch btnDown(PIN_DOWN, INPUT);
+Switch btnMove(PIN_MOVE, INPUT);
+Switch btnSet(PIN_SET, INPUT);
+Switch btnOn(PIN_ON, INPUT);
+Switch btnError(PIN_QERROR, INPUT);
 
 volatile float Temp = 0;
 int TempladoMinTotal = 10 * 60;
@@ -18,6 +19,7 @@ int TempladoMinActual = 0;
 int TempladoTiempoInicio = 0;
 int TempladoTemp = 50;
 int TempEspera = 2;
+int menu = 0;
 bool isCiclo = true;
 bool isOn = true;
 bool isOnCiclo = false;
@@ -28,8 +30,10 @@ bool updateNow = false;
 void setup()
 {
   lcd.begin(16, 2);
-  lcd.createChar(1, grado);
-  lcd.createChar(2, up);
+  lcd.createChar(CH_GRADO, grado);           // º
+  lcd.createChar(CH_CALENTANDO, calentando); // Flecha Arriba
+  lcd.createChar(CH_SELMENU, selMenu);
+  lcd.createChar(CH_NADA, nada);
   pinMode(PIN_QUEMADOR, OUTPUT);
   pinMode(PIN_RESET, OUTPUT);
 }
@@ -75,39 +79,52 @@ void manageCiclo()
 
 void readButtons()
 {
-  btnUp.poll();
-  if (btnUp.pushed())
+  if (btnUp.poll()) //UP
   {
-    lcd.setCursor(0, 10);
-    lcd.print("1");
-    TempladoTemp++;
-    updateNow = true;
-  };
-  btnDown.poll();
-  if (btnDown.pushed() && TempladoTemp > 10)
+    if (btnUp.pushed())
+    {
+      if (menu == 0)
+        TempladoTemp++;
+      if (menu == 1)
+        TempladoMinTotal++;
+      updateNow = true;
+    };
+  };                  //UP
+  if (btnDown.poll()) //DOWN
   {
-    TempladoTemp--;
-    updateNow = true;
-  };
+    if (btnDown.pushed())
+    {
+      if ((menu == 0) && (TempladoTemp > 20))
+        TempladoTemp--;
+      if ((menu == 1) && (TempladoMinTotal > 1))
+        TempladoMinTotal--;
+      updateNow = true;
+    };
+  }; //DOWN
 }
 
 void updateLcd()
 {
-  if (((millis() - lastUpdateTime) > LCD_UPDATE_TIME)|| updateNow)
+  if (((millis() - lastUpdateTime) > LCD_UPDATE_TIME) || updateNow)
   {
     lcd.clear();
+    if (menu > -1)
+    {
+      lcd.setCursor(15, menu);
+      lcd.write(CH_SELMENU);
+    };
+
     lcd.setCursor(0, 0);
     String temperaturas = "Te=";
     temperaturas.concat(int(Temp));
     temperaturas.concat("/");
     temperaturas.concat(TempladoTemp);
     lcd.print(temperaturas);
-    lcd.write(1);
+    lcd.write(CH_GRADO);
     if (isCalentando)
     {
-      lcd.write(2);
+      lcd.write(CH_CALENTANDO);
     }
-    if(digitalRead(PIN_UP)) lcd.write(2);
     lcd.setCursor(0, 1);
     String tiempos = "Ti=";
     tiempos.concat(String(TempladoMinActual / 60) + ":" + String(TempladoMinActual % 60));
