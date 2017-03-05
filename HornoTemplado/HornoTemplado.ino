@@ -6,20 +6,19 @@
 
 PT100 st(PIN_SENSOR);                      //Inicializar sensor PT100
 LiquidCrystal lcd(RS, EN, D4, D5, D6, D7); //Inicializar Display
-Switch btnUp(PIN_UP, INPUT);
-Switch btnDown(PIN_DOWN, INPUT);
-Switch btnMove(PIN_MOVE, INPUT);
-Switch btnSet(PIN_SET, INPUT);
-Switch btnOn(PIN_ON, INPUT);
-Switch btnError(PIN_QERROR, INPUT);
+Switch btnUp(PIN_UP, INPUT);               //btn Aumentar item
+Switch btnDown(PIN_DOWN, INPUT);           //btn Disminuir item
+Switch btnMove(PIN_MOVE, INPUT);           //btn Cambiar de item
+Switch btnSet(PIN_SET, INPUT);             //btn Guardar configuracion
+Switch btnOn(PIN_ON, INPUT);               // btn Inicio
+Switch btnError(PIN_QERROR, INPUT);        // Entrada señal de ERROR de quemador
 
 volatile float Temp = 0;
 int TempladoMinTotal = 10 * 60;
 int TempladoMinActual = 0;
 int TempladoTiempoInicio = 0;
 int TempladoTemp = 50;
-int TempEspera = 2;
-int menu = 0;
+int menu = -1;
 bool isCiclo = true;
 bool isOn = true;
 bool isOnCiclo = false;
@@ -46,17 +45,43 @@ void loop()
   updateLcd();
 }
 
+void readButtons()
+{
+  if (btnUp.poll())
+  {
+    if (btnUp.pushed())
+    {
+      if ((menu == 0) && (TempladoTemp < TEMP_MAX))
+        TempladoTemp++;
+      if ((menu == 1) && (TempladoMinTotal < TIEMPO_MAX))
+        TempladoMinTotal++;
+      updateNow = true;
+    };
+  }; //btnUp
+  if (btnDown.poll())
+  {
+    if (btnDown.pushed())
+    {
+      if ((menu == 0) && (TempladoTemp > TEMP_MIN))
+        TempladoTemp--;
+      if ((menu == 1) && (TempladoMinTotal > TIEMPO_MIN))
+        TempladoMinTotal--;
+      updateNow = true;
+    };
+  }; //btnDown
+} // readButtons
+
 void manageTemperatura()
 {
   Temp = st.getTemp();
   if (isOn)
   {
-    if (Temp < (TempladoTemp - TempEspera))
+    if (Temp < (TempladoTemp - TEMP_ISTERESIS))
     {
       digitalWrite(PIN_QUEMADOR, HIGH);
       isCalentando = true;
     };
-    if (Temp > (TempladoTemp + TempEspera))
+    if (Temp > (TempladoTemp + TEMP_ISTERESIS))
     {
       digitalWrite(PIN_QUEMADOR, LOW);
       isCalentando = false;
@@ -75,32 +100,6 @@ void manageCiclo()
   {
     TempladoMinActual = (millis() - TempladoTiempoInicio) / 1000 / 60;
   }
-}
-
-void readButtons()
-{
-  if (btnUp.poll()) //UP
-  {
-    if (btnUp.pushed())
-    {
-      if (menu == 0)
-        TempladoTemp++;
-      if (menu == 1)
-        TempladoMinTotal++;
-      updateNow = true;
-    };
-  };                  //UP
-  if (btnDown.poll()) //DOWN
-  {
-    if (btnDown.pushed())
-    {
-      if ((menu == 0) && (TempladoTemp > 20))
-        TempladoTemp--;
-      if ((menu == 1) && (TempladoMinTotal > 1))
-        TempladoMinTotal--;
-      updateNow = true;
-    };
-  }; //DOWN
 }
 
 void updateLcd()
