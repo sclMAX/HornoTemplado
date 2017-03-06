@@ -31,18 +31,18 @@ byte selMenu[8] = //Menu item sel.
         0B00111,
         0B00011,
         0B00001};
-byte nada[8] = //Menu item sel.
+byte ciclo[8] = //En CICLO
     {
-        0B00000,
-        0B00000,
-        0B00000,
-        0B00000,
-        0B00000,
-        0B00000,
-        0B00000,
-        0B00000};
+        0B01110,
+        0B10001,
+        0B10001,
+        0B01110,
+        0B10001,
+        0B11001,
+        0B10101,
+        0B10011};
 #define CH_GRADO 1
 #define CH_CALENTANDO 2
 #define CH_SELMENU 3
-#define CH_NADA 4
+#define CH_CICLO 4
 #endif //LCDCHARS_H

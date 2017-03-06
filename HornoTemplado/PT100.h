@@ -5,7 +5,7 @@ class PT100
 {
   private:
     // known resistance in voltage divider
-    static const float R1 = 96.98;
+    static const float R1 = 125;
   /*  static const int sensorDatoLow = 535; //Dato leido a 535@7Cº.
     static const int sensorDatoDif = 55;  //Diferencia entre Dato leido a -Cº y +Cº.590@75º - 535@7º
     static const int tempValueLow = 7;    //Valor real de -Cº medido.
