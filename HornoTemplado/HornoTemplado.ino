@@ -142,7 +142,7 @@ void updateLcd()
       temperaturas.concat(int(Temp));
       temperaturas.concat("/");
       temperaturas.concat(TempladoTemp);
-      lcd.print(temperaturas + " ");
+      lcd.print(temperaturas);
       lcd.write(CH_GRADO);
       if (isCalentando && isOn)
         lcd.write(CH_CALENTANDO);

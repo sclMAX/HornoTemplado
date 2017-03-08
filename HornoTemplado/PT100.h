@@ -6,7 +6,7 @@ class PT100
   private:
     // known resistance in voltage divider
     static const float R1 = 125;
-  /*  static const int sensorDatoLow = 535; //Dato leido a 535@7Cº.
+    /*  static const int sensorDatoLow = 535; //Dato leido a 535@7Cº.
     static const int sensorDatoDif = 55;  //Diferencia entre Dato leido a -Cº y +Cº.590@75º - 535@7º
     static const int tempValueLow = 7;    //Valor real de -Cº medido.
     static const int tempValueDif = 68;   //Diferencia entre valor medido a -Cº y +Cº.75º - 7º*/
@@ -31,7 +31,7 @@ PT100::PT100(int pin)
 
 float PT100::MultiMap(float val)
 {
-    
+
     static const int TT = 250;
     static const float _in[TT] = {
         100.00, 100.39, 100.78, 101.17, 101.56, 101.95, 102.34, 102.73, 103.12, 103.51,
@@ -60,13 +60,17 @@ float PT100::MultiMap(float val)
         186.82, 187.18, 187.55, 187.91, 188.27, 188.64, 189.00, 189.37, 189.73, 190.09,
         190.46, 190.82, 191.18, 191.54, 191.91, 192.27, 192.63, 192.99, 193.36, 193.72};
     // calculate if value is out of range
-    if (val < _in[0]) return -99.99;
-    if (val > _in[TT - 1]) return 99.99;
+    if (val < _in[0])
+        return -99.99;
+    if (val > _in[TT - 1])
+        return 99.99;
     //  search for 'value' in _in array to get the position No.
     uint8_t pos = 0;
-    while (val > _in[pos]) pos++;
+    while (val > _in[pos])
+        pos++;
     // handles the 'rare' equality case
-    if (val == _in[pos]) return pos;
+    if (val == _in[pos])
+        return pos;
     float r1 = _in[pos - 1];
     float r2 = _in[pos];
     int c1 = pos - 1;
@@ -76,14 +80,16 @@ float PT100::MultiMap(float val)
 
 void PT100::readTemp()
 {
-    dato = analogRead(PIN);
+    float vd = 0;
+    for (int i = 0; i < 10; i++)
+    {
+        vd += analogRead(PIN);
+        delay(1);
+    }
+    dato = vd / 10;
     float Vout = dato * (5.0 / 1023.0);
     float R2 = R1 * 1 / (5.0 / Vout - 1);
     Temp = MultiMap(R2);
-    /*Temp = dato - sensorDatoLow;
-    Temp = Temp / sensorDatoDif;
-    Temp = Temp * tempValueDif;
-    Temp = Temp + tempValueLow;*/
 };
 
 float PT100::getTemp()
