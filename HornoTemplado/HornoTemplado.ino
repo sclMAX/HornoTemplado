@@ -32,6 +32,7 @@ volatile bool isPreguntaCancelar = false;
 volatile bool updateNow = false;
 unsigned long lastUpdateTime = 0;
 unsigned long tiempoProceso = 0;
+unsigned long now = 0;
 
 void setup()
 {
@@ -82,6 +83,7 @@ void saveConfig()
 
 void loop()
 {
+  now = millis();
   manageTemperatura();
   manageCiclo();
   updateLcd();
@@ -105,7 +107,7 @@ void manageTemperatura()
       if (!isOnCiclo && isOn)
       {
         isOnCiclo = true;
-        TempladoTiempoInicio = millis();
+        TempladoTiempoInicio = now;
       };
     };
   }
@@ -115,7 +117,7 @@ void manageCiclo()
 {
   if (isOnCiclo)
   {
-    TempladoMinActual = (millis() - TempladoTiempoInicio) / 1000 / 60;
+    TempladoMinActual = (now - TempladoTiempoInicio) / 1000 / 60;
     if (TempladoMinActual >= TempladoMinTotal)
     {
       isFinCiclo = true;
@@ -127,7 +129,7 @@ void manageCiclo()
 
 void updateLcd()
 {
-  if ((((millis() - lastUpdateTime) > LCD_UPDATE_TIME) || updateNow) && !isPreguntaCancelar)
+  if ((((now - lastUpdateTime) > LCD_UPDATE_TIME) || updateNow) && !isPreguntaCancelar)
   {
     lcd.clear();
     if (!isFinCiclo && !isCancelado)
@@ -160,117 +162,117 @@ void updateLcd()
       lcd.setCursor(0, 0);
       lcd.print("** CANCELADO **");
       lcd.setCursor(0, 1);
-      lcd.print("T.Total:" + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60));
+      lcd.print("T.Total " + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60) + "H");
     }
     else if (isFinCiclo)
     {
       lcd.setCursor(0, 0);
       lcd.print("Fin Templado");
       lcd.setCursor(0, 1);
-      lcd.print("T.Total:" + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60));
+      lcd.print("T.Total " + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60) + "H");
     };
     updateNow = false;
-    lastUpdateTime = millis();
+    lastUpdateTime = now;
   }
 }
 
 void readButtons()
 {
-  if (btnOn.poll())
-  {
-    if (btnOn.pushed())
-    {
-      if ((millis() - btnOnUltimoClick) > (BTNON_ESPERA_CLICK))
-      {
-        if (isOn)
-        {
-          LCD_Cancelar();
-        }
-        else // !isOn
-        {
-          if (isCancelado)
-          {
-            preparar();
-          }
-          else
-          {
-            if (isFinCiclo)
-            {
-              isFinCiclo = false;
-              preparar();
-            }
-            else
-            {
-              preparar();
-              isOn = true;
-            };
-          };
-        }; //isOn
-      };
-      btnOnUltimoClick = millis();
-    };           //btnOn.pushed()
-  };             //btnOn
+  chkBtn(&btnOn, &btnOn_onClick);
   if (menu > -1) // si hay un menu seleccionado chequeo los botones
   {
-    if (btnUp.poll())
-    {
-      if (btnUp.pushed())
-      {
-        if ((menu == 0) && (TempladoTemp < TEMP_MAX))
-          TempladoTemp++;
-        if ((menu == 1) && (TempladoMinTotal < TIEMPO_MAX))
-          TempladoMinTotal++;
-        updateNow = true;
-      };
-    }; //btnUp
-    if (btnDown.poll())
-    {
-      if (btnDown.pushed())
-      {
-        if ((menu == 0) && (TempladoTemp > TEMP_MIN))
-          TempladoTemp--;
-        if ((menu == 1) && (TempladoMinTotal > TIEMPO_MIN))
-          TempladoMinTotal--;
-        updateNow = true;
-      };
-    }; //btnDown
+    chkBtn(&btnUp, &btnUp_onClick);
+    chkBtn(&btnDown, &btnDown_onClick);
   };
-  if (btnMove.poll())
+  chkBtn(&btnMove, &btnMove_onClick);
+  chkBtn(&btnSet, &btnSet_onClick);
+} // readButtons
+
+void chkBtn(Switch *btn, void *pushed())
+{
+  if (btn->poll())
   {
-    if (btnMove.pushed())
+    if (btn->pushed())
+      pushed();
+  }
+}
+
+void btnSet_onClick()
+{
+  if (isPreguntaCancelar && isOn)
+  {
+    isPreguntaCancelar = false;
+    isCancelado = true;
+    apagar();
+  }
+  else if (menu > -1)
+  {
+    saveConfig();
+    menu = -1;
+    updateNow = true;
+  };
+}
+void btnMove_onClick()
+{
+  if (isPreguntaCancelar)
+  {
+    isPreguntaCancelar = false;
+  }
+  else
+  {
+    menu++;
+    if (menu > 1)
+      menu = -1;
+  };
+  updateNow = true;
+}
+void btnUp_onClick()
+{
+  if ((menu == 0) && (TempladoTemp < TEMP_MAX))
+    TempladoTemp++;
+  if ((menu == 1) && (TempladoMinTotal < TIEMPO_MAX))
+    TempladoMinTotal++;
+  updateNow = true;
+}
+void btnDown_onClick()
+{
+  if ((menu == 0) && (TempladoTemp > TEMP_MIN))
+    TempladoTemp--;
+  if ((menu == 1) && (TempladoMinTotal > TIEMPO_MIN))
+    TempladoMinTotal--;
+  updateNow = true;
+}
+void btnOn_onClick()
+{
+  if ((now - btnOnUltimoClick) > (BTNON_ESPERA_CLICK))
+  {
+    if (isOn)
     {
-      if (isPreguntaCancelar)
+      LCD_Cancelar();
+    }
+    else // !isOn
+    {
+      if (isCancelado)
       {
-        isPreguntaCancelar = false;
+        preparar();
       }
       else
       {
-        menu++;
-        if (menu > 1)
-          menu = -1;
+        if (isFinCiclo)
+        {
+          isFinCiclo = false;
+          preparar();
+        }
+        else
+        {
+          preparar();
+          isOn = true;
+        };
       };
-      updateNow = true;
-    };
-  }; //btnMove
-  if (btnSet.poll())
-  {
-    if (btnSet.pushed())
-    {
-      if (isPreguntaCancelar && isOn)
-      {
-        isPreguntaCancelar = false;
-        isCancelado = true;
-        apagar();
-      }
-      else if (menu > -1)
-      {
-        saveConfig();
-        menu = -1;
-        updateNow = true;
-      };
-    };
-  }; //btnSet
-} // readButtons
+    }; //isOn
+  };
+  btnOnUltimoClick = now;
+}
 
 void apagar()
 {
@@ -280,7 +282,7 @@ void apagar()
   TempladoTiempoInicio = 0;
   TempladoMinActual = 0;
   digitalWrite(PIN_QUEMADOR, LOW);
-  tiempoProceso = millis() - tiempoProceso;
+  tiempoProceso = now - tiempoProceso;
 }
 void LCD_Cancelar()
 {
