@@ -22,6 +22,7 @@ int TempladoTiempoInicio = 0;
 int TempladoTemp;
 int menu = -1;
 int btnOnUltimoClick = 0;
+bool isPowerOn = false;
 volatile float Temp = 0;
 volatile bool isOn = false;
 volatile bool isOnCiclo = false;
@@ -43,6 +44,10 @@ void setup()
   lcd.createChar(CH_CICLO, ciclo);
   pinMode(PIN_QUEMADOR, OUTPUT);
   pinMode(PIN_RESET, OUTPUT);
+  pinMode(PIN_POWER, OUTPUT);
+  digitalWrite(PIN_QUEMADOR, LOW);
+  digitalWrite(PIN_RESET, LOW);
+  digitalWrite(PIN_POWER, LOW);
   readConfig();
 }
 
@@ -246,6 +251,10 @@ void btnOn_onClick()
 {
   if ((now - btnOnUltimoClick) > (BTNON_ESPERA_CLICK))
   {
+    if (!isPowerOn)
+    {
+      powerOn();
+    };
     if (isOn)
     {
       LCD_Cancelar();
@@ -274,6 +283,21 @@ void btnOn_onClick()
   btnOnUltimoClick = now;
 }
 
+void powerOn()
+{
+  digitalWrite(PIN_POWER, HIGH);
+  isPowerOn = true;
+}
+
+void powerOff()
+{
+  if (isPowerOn)
+  {
+    isPowerOn = false;
+    digitalWrite(PIN_POWER, LOW);
+  }
+}
+
 void apagar()
 {
   isOn = false;
@@ -282,6 +306,7 @@ void apagar()
   TempladoTiempoInicio = 0;
   TempladoMinActual = 0;
   digitalWrite(PIN_QUEMADOR, LOW);
+  powerOff();
   tiempoProceso = now - tiempoProceso;
 }
 void LCD_Cancelar()

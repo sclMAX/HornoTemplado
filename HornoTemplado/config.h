@@ -1,12 +1,12 @@
 #ifndef CONFIG_H
 #define CONFIG_H
-#define LCD_UPDATE_TIME 1000      // Retardo de actualizacion de LCD
-#define BTNON_ESPERA_CLICK 2000      //Espera entre pulsaciones btnOn
-#define TEMP_MIN 50               // Temperatura Minima
-#define TEMP_MAX 250              // Temperatura Maxima
-#define TEMP_ISTERESIS 2          // Margen en ºC para prender/apagar quemador
-#define TIEMPO_MIN 1              // Tiempo Minimo en minutos
-#define TIEMPO_MAX 900            // Tiempo Maximo en minutos
+#define LCD_UPDATE_TIME 1000    // Retardo de actualizacion de LCD
+#define BTNON_ESPERA_CLICK 2000 //Espera entre pulsaciones btnOn
+#define TEMP_MIN 50             // Temperatura Minima
+#define TEMP_MAX 250            // Temperatura Maxima
+#define TEMP_ISTERESIS 2        // Margen en ºC para prender/apagar quemador
+#define TIEMPO_MIN 1            // Tiempo Minimo en minutos
+#define TIEMPO_MAX 900          // Tiempo Maximo en minutos
 
 //**** Configuracion de PINES ****
 #define PIN_UP 4       // Menu SET +
@@ -18,6 +18,7 @@
 #define PIN_ON 13      // On/Off ciclo
 #define PIN_QERROR 0   // Alarma Quemador
 #define PIN_SENSOR A5  // Sensor de temperatura
+#define PIN_POWER 18   // Control quemador On/Off
 #define RS 7           // LCD RS
 #define EN 8           // LCD EN
 #define D4 9           // LCD D4
