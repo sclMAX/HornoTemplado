@@ -41,8 +41,19 @@ byte ciclo[8] = //En CICLO
         0B11001,
         0B10101,
         0B10011};
+byte alarma[8] = //Alarma
+    {
+        0B11111,
+        0B11111,
+        0B11000,
+        0B11111,
+        0B11111,
+        0B11000,
+        0B11111,
+        0B11111};
 #define CH_GRADO 1
 #define CH_CALENTANDO 2
 #define CH_SELMENU 3
 #define CH_CICLO 4
+#define CH_ALARMA 5
 #endif //LCDCHARS_H
