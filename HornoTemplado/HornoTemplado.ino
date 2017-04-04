@@ -53,9 +53,9 @@ void setup()
   pinMode(PIN_RESET, OUTPUT);
   pinMode(PIN_POWER, OUTPUT);
   pinMode(PIN_QERROR, INPUT);
-  digitalWrite(PIN_QUEMADOR, LOW);
-  digitalWrite(PIN_RESET, LOW);
-  digitalWrite(PIN_POWER, LOW);
+  digitalWrite(PIN_QUEMADOR, HIGH);
+  digitalWrite(PIN_RESET, HIGH);
+  digitalWrite(PIN_POWER, HIGH);
   readConfig();
 }
 
@@ -110,12 +110,12 @@ void manageTemperatura()
   {
     if (Temp < (TempladoTemp - TEMP_ISTERESIS))
     {
-      digitalWrite(PIN_QUEMADOR, HIGH);
+      digitalWrite(PIN_QUEMADOR, LOW);
       isCalentando = true;
     };
     if (Temp > (TempladoTemp + TEMP_ISTERESIS))
     {
-      digitalWrite(PIN_QUEMADOR, LOW);
+      digitalWrite(PIN_QUEMADOR, HIGH);
       isCalentando = false;
       if (!isOnCiclo && isOn)
       {
@@ -275,10 +275,6 @@ void btnOn_onClick()
 {
   if ((now - btnOnUltimoClick) > (BTNON_ESPERA_CLICK))
   {
-    if (!isPowerOn)
-    {
-      powerOn();
-    };
     if (isOn)
     {
       LCD_Cancelar();
@@ -299,6 +295,10 @@ void btnOn_onClick()
         else
         {
           preparar();
+          if (!isPowerOn)
+          {
+            powerOn();
+          };
           isOn = true;
         };
       };
@@ -334,7 +334,7 @@ void btnError_onSwitched(bool estado)
 
 void powerOn()
 {
-  digitalWrite(PIN_POWER, HIGH);
+  digitalWrite(PIN_POWER, LOW);
   isPowerOn = true;
 }
 
@@ -343,7 +343,7 @@ void powerOff()
   if (isPowerOn)
   {
     isPowerOn = false;
-    digitalWrite(PIN_POWER, LOW);
+    digitalWrite(PIN_POWER, HIGH);
   }
 }
 
@@ -353,9 +353,9 @@ void reset()
   {
     if (now > (inicioAlarma + TIEMPO_RESET))
     {
-      digitalWrite(PIN_RESET, HIGH);
-      delay(2000);
       digitalWrite(PIN_RESET, LOW);
+      delay(2000);
+      digitalWrite(PIN_RESET, HIGH);
       resetCount++;
     }
   }
@@ -373,7 +373,7 @@ void apagar()
   isOnCiclo = false;
   TempladoTiempoInicio = 0;
   TempladoMinActual = 0;
-  digitalWrite(PIN_QUEMADOR, LOW);
+  digitalWrite(PIN_QUEMADOR, HIGH);
   powerOff();
   tiempoProceso = now - tiempoProceso;
 }
@@ -399,7 +399,7 @@ void preparar()
   isPreguntaCancelar = false;
   TempladoTiempoInicio = 0;
   TempladoMinActual = 0;
-  digitalWrite(PIN_QUEMADOR, LOW);
+  digitalWrite(PIN_QUEMADOR, HIGH);
   tiempoProceso = 0;
   lcd.clear();
   lcd.setCursor(0, 0);
