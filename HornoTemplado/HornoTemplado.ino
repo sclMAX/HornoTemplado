@@ -17,11 +17,11 @@ int eeAdress = 0;                         // Direccion actual de la memoria
 int EEPROM_ver = 21;                      // Version de configuracion en memoria
 int TempladoMinTotal;                     // Total de minutos para el proceso de templado
 unsigned long TempladoMinActual = 0;      // Minutos transcurridos en temperatura
-int TempladoTiempoInicio = 0;             // Tiempo de inicio de ciclo
+unsigned long TempladoTiempoInicio = 0;   // Tiempo de inicio de ciclo
 int TempladoTemp;                         // Temperatura de templado
 int menu = -1;                            // Menu Actual
 int resetCount = 0;                       // Contador de intentos de Reset
-int btnOnUltimoClick = 0;                 // Tiempo ultimo click
+unsigned long btnOnUltimoClick = 0;       // Tiempo ultimo click
 int errores = 0;                          // Contador de alarmas durante el proceso
 bool isPowerOn = false;                   // Equipo prendido
 volatile float Temp = 0;                  // Temperatura actual
@@ -153,49 +153,51 @@ void updateLcd()
         lcd.write(CH_SELMENU);
       };
       lcd.setCursor(0, 0);
-      String temperaturas = "Te=";
-      temperaturas.concat(int(Temp));
-      temperaturas.concat("/");
-      temperaturas.concat(TempladoTemp);
-      lcd.print(temperaturas);
+      lcd.print("Te=" + String(int(Temp)) + "/" + String(TempladoTemp));
       lcd.write(CH_GRADO);
-      if (isCalentando && isOn)
-        lcd.write(CH_CALENTANDO);
       if (isOn)
-        lcd.write(CH_CICLO);
+      {
+        lcd.write(CH_ON);
+        if (isCalentando)
+          lcd.write(CH_CALENTANDO);
+      }
       if (isInError)
         lcd.write(CH_ALARMA);
       lcd.setCursor(0, 1);
-      String tiempos = "Ti=";
-      tiempos.concat(String(TempladoMinActual / 60) + ":" + String(TempladoMinActual % 60));
-      tiempos.concat("-");
-      tiempos.concat(String(TempladoMinTotal / 60) + ":" + String(TempladoMinTotal % 60));
-      lcd.print(tiempos);
+      lcd.print("Ti=" + formatTime(TempladoMinActual) + "-" + formatTime(TempladoMinTotal));
+      if (isOnCiclo)
+      {
+        lcd.write(CH_CICLO);
+      }
     }
     else if (isCancelado)
     {
       lcd.setCursor(0, 0);
       lcd.print("** CANCELADO **");
       lcd.setCursor(0, 1);
-      lcd.print("T.Total " + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60) + "H");
+      lcd.print("T.Total " + formatTime(tiempoProceso) + "H");
     }
     else if (isFinCiclo)
     {
       lcd.setCursor(0, 0);
       lcd.print("Fin Templado");
       lcd.setCursor(0, 1);
-      lcd.print("T.Total " + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60) + "H");
+      lcd.print("T.Total " + formatTime(tiempoProceso) + "H");
     }
     else if (isFalla)
     {
       lcd.setCursor(0, 0);
       lcd.print("**** FALLA ****");
       lcd.setCursor(0, 1);
-      lcd.print("E" + String(errores) + "TP" + String(tiempoProceso / 1000 / 60 / 60) + ":" + String(tiempoProceso / 1000 / 60 % 60) + "TT" + String(TempladoMinActual / 60) + ":" + String(TempladoMinActual % 60));
+      lcd.print("E" + String(errores) + "TP" + +"TT" + formatTime(TempladoMinActual));
     };
     updateNow = false;
     lastUpdateTime = now;
   }
+}
+String formatTime(long t)
+{
+  return String(t / 1000 / 60 / 60) + ":" + String(t / 1000 / 60 % 60);
 }
 
 void readButtons()
